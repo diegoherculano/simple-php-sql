@@ -4,53 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-    <style>
-        main {
-            color: red;
-        }
-    </style>
+    <title>Cadastro Simples</title>
 </head>
 <body>
     <form action="">
-        Empresa:<input type="text" name="nomeEmpresa">
-        Diretor:<input type="text" name="nomeDiretor">
+        Nome da empresa: <input type="text" name="nomeEmpresa">
+        Nome do Dono: <input type="text" name="nomeDono">
         <input type="submit" value="Cadastrar">
-        <br><br>
     </form>
+    <br>
     <?php
-        require_once "banco.php";
-        $empresas = $banco->query("select * from clientes");
-        echo "Seu banco tem cadastrado $empresas->num_rows empresas.<br>";
-        echo "<br>Empresas cadastradas:<br>";
-        $nomeEmpresa = isset($_GET['nomeEmpresa']);
-        $nomeDiretor = isset($_GET['nomeDiretor']);
-        if($nomeDiretor){
+        $banco = mysqli_connect("localhost", "root", "", "dadosempresas");
+        if (mysqli_connect_errno($banco)){
+            echo "Erro ao conectar ao Banco de dados." . mysqli_connect_error();
+        }
+
+        if (isset($_GET['nomeEmpresa'])){
             $nomeEmpresa = $_GET['nomeEmpresa'];
-            $nomeDiretor = $_GET['nomeDiretor'];
-            $cadastro = "insert into clientes (nomeEmpresa, nomeDiretor) values ('$nomeEmpresa', '$nomeDiretor')";
-        }
+            $nomeDono = $_GET['nomeDono'];            
+        } 
+
         $passe = 1;
-        while ($reg = $empresas->fetch_object()){
-            echo "<br>Empresa: $reg->nomeEmpresa";
-            echo "<br>Direitor: $reg->nomeDiretor<br>";
-            if ($nomeEmpresa == $reg->nomeEmpresa){
-                $passe = 0;
-            }
-        }
-        if ($passe == 1){
-            if(isset($_GET['nomeEmpresa'])){
-                if ($banco->query($cadastro) === TRUE){
-                    echo "Cadastro concluído!";
-                } else {
-                    echo "Erro: $cadastro <br> $banco->error";
+       
+        $query = $banco->query("select * from clientes");
+        echo "Há um total de " . $query->num_rows . " empresas cadastradas.<br><br>";
+        while ($row = $query->fetch_assoc()){
+            if (isset($_GET['nomeEmpresa'])){
+                if($_GET['nomeEmpresa'] == $row['nomeEmpresa']){
+                    $passe = 0;
                 }
             }
-        } else { 
-            if (isset($_GET['nomeEmpresa'])){
-                echo "Impossível cadastrar. Empresa já existente.";
+            echo "Nome da empresa: " . $row['nomeEmpresa'] . "<br>";
+            echo "Nome do dono: " . $row['nomeDono'] . "<br><br>";
+        }     
+
+        if(isset($_GET['nomeEmpresa'])){
+            if ($passe == 1){
+                $banco->query("insert into clientes (nomeEmpresa, nomeDono) values ('$nomeEmpresa', '$nomeDono')");
+                echo "Você cadastrou $nomeEmpresa e $nomeDono. <br><br>";
+                
+            } else {
+                echo "Impossível cadastrar $nomeEmpresa, já existe! <br><br>";
             }
         }
+        
+        
     ?>
+    <a href="http://localhost/php/">Atualizar</a>
 </body>
 </html>
